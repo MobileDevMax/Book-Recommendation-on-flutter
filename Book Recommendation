@@ -1,0 +1,154 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class Book {
+  final String title;
+  final String author;
+  final String genre;
+
+  Book({required this.title, required this.author, required this.genre});
+}
+
+class BookProvider with ChangeNotifier {
+  List<Book> _books = [
+
+    Book(title: "1984", author: "George Orwell", genre: "Dystopian"),
+    Book(title: "Brave New World", author: "Aldous Huxley", genre: "Dystopian"),
+    Book(title: "Fahrenheit 451", author: "Ray Bradbury", genre: "Dystopian"),
+
+    Book(
+        title: "To Kill a Mockingbird", author: "Harper Lee", genre: "Fiction"),
+    Book(
+        title: "The Great Gatsby",
+        author: "F. Scott Fitzgerald",
+        genre: "Fiction"),
+    Book(title: "Pride and Prejudice", author: "Jane Austen", genre: "Fiction"),
+
+    Book(title: "Moby-Dick", author: "Herman Melville", genre: "Classic"),
+    Book(title: "War and Peace", author: "Leo Tolstoy", genre: "Classic"),
+    Book(
+        title: "The Catcher in the Rye",
+        author: "J.D. Salinger",
+        genre: "Classic"),
+
+    Book(title: "The Hobbit", author: "J.R.R. Tolkien", genre: "Fantasy"),
+    Book(
+        title: "Harry Potter and the Sorcerer's Stone",
+        author: "J.K. Rowling",
+        genre: "Fantasy"),
+    Book(
+        title: "A Game of Thrones",
+        author: "George R.R. Martin",
+        genre: "Fantasy"),
+
+    Book(title: "The Da Vinci Code", author: "Dan Brown", genre: "Mystery"),
+    Book(title: "Gone Girl", author: "Gillian Flynn", genre: "Mystery"),
+    Book(
+        title: "The Girl with the Dragon Tattoo",
+        author: "Stieg Larsson",
+        genre: "Mystery"),
+
+    Book(title: "Dune", author: "Frank Herbert", genre: "Science Fiction"),
+    Book(
+        title: "Neuromancer",
+        author: "William Gibson",
+        genre: "Science Fiction"),
+    Book(
+        title: "The Left Hand of Darkness",
+        author: "Ursula K. Le Guin",
+        genre: "Science Fiction"),
+  ];
+
+  List<Book> getBooks() => _books;
+
+  List<Book> getRecommendations(String genre) {
+    return _books
+        .where((book) => book.genre.toLowerCase() == genre.toLowerCase())
+        .toList();
+  }
+}
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => BookProvider(),
+      child: MaterialApp(
+        title: 'Book Recommendation',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: BookRecommendationScreen(),
+      ),
+    );
+  }
+}
+
+class BookRecommendationScreen extends StatelessWidget {
+  final TextEditingController _genreController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('What to Read?'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _genreController,
+              decoration: InputDecoration(labelText: 'Enter Genre'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                String genre = _genreController.text;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RecommendationsScreen(genre: genre),
+                  ),
+                );
+              },
+              child: Text('Get Recommendations'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class RecommendationsScreen extends StatelessWidget {
+  final String genre;
+
+  RecommendationsScreen({required this.genre});
+
+  @override
+  Widget build(BuildContext context) {
+    final bookProvider = Provider.of<BookProvider>(context);
+    final recommendations = bookProvider.getRecommendations(genre);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Recommendations for genre: $genre'),
+      ),
+      body: ListView.builder(
+        itemCount: recommendations.length,
+        itemBuilder: (context, index) {
+          final book = recommendations[index];
+          return ListTile(
+            title: Text(book.title),
+            subtitle: Text('Author: ${book.author}'),
+          );
+        },
+      ),
+    );
+  }
+}
